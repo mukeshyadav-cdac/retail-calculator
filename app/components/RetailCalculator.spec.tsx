@@ -73,4 +73,13 @@ describe("RetailCalculator", () => {
     expect(screen.getByText("+$6.85")).toBeInTheDocument();
     expect(screen.getByText("$106.85")).toBeInTheDocument();
   });
+
+  it("shows validation error when quantity is empty on blur", () => {
+    render(<RetailCalculator />);
+
+    const quantityInput = screen.getByLabelText("How many items");
+    fireEvent.blur(quantityInput);
+
+    expect(screen.getByText("Quantity must be at least 1")).toBeInTheDocument();
+  });
 });

@@ -21,5 +21,3 @@ export const TAX_RATES: Record<string, number> = {
   CHC: 0.04,
   TAS: 0.0825,
 };
-
-export type RegionCode = (typeof REGIONS)[number]["code"];
