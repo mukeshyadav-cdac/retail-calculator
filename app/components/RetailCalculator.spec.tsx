@@ -43,4 +43,18 @@ describe("RetailCalculator", () => {
     fireEvent.change(select, { target: { value: "AUK" } });
     expect(screen.getByText("AUK")).toBeInTheDocument();
   });
+
+  it("applies 3% discount for orders $1000+", () => {
+    render(<RetailCalculator />);
+
+    const quantityInput = screen.getByLabelText("How many items");
+    const priceInput = screen.getByLabelText("Price per item");
+
+    fireEvent.change(quantityInput, { target: { value: "10" } });
+    fireEvent.change(priceInput, { target: { value: "100" } });
+
+    expect(screen.getByText("Discount (3%)")).toBeInTheDocument();
+    expect(screen.getByText("-$30.00")).toBeInTheDocument();
+    expect(screen.getByText("$970.00")).toBeInTheDocument();
+  });
 });
