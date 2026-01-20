@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { REGIONS } from "../lib/constants";
 import { formatCurrency, getDiscountRate, parseNumber } from "../lib/utils";
+import { getTaxStrategy } from "../lib/taxStrategies";
 
 type ResultRowProps = {
   label: string;
@@ -35,10 +36,16 @@ export default function RetailCalculator() {
     const discountRate = getDiscountRate(subtotal);
     const discountAmount = subtotal * discountRate;
     const discountedPrice = subtotal - discountAmount;
-    return { subtotal, discountRate, discountAmount, discountedPrice };
-  }, [quantity, price]);
 
-  const { subtotal, discountRate, discountAmount, discountedPrice } = calculations;
+    const taxStrategy = region ? getTaxStrategy(region) : null;
+    const taxRate = taxStrategy?.getRate() ?? 0;
+    const taxAmount = taxStrategy?.calculateTax(discountedPrice) ?? 0;
+    const finalTotal = discountedPrice + taxAmount;
+
+    return { subtotal, discountRate, discountAmount, discountedPrice, taxRate, taxAmount, finalTotal };
+  }, [quantity, price, region]);
+
+  const { subtotal, discountRate, discountAmount, discountedPrice, taxRate, taxAmount, finalTotal } = calculations;
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -115,7 +122,14 @@ export default function RetailCalculator() {
               green
             />
           )}
-          <ResultRow label="After Discount" value={formatCurrency(discountedPrice)} highlight border />
+          <ResultRow label="After Discount" value={formatCurrency(discountedPrice)} />
+          {taxRate > 0 && (
+            <ResultRow
+              label={`Tax (${(taxRate * 100).toFixed(2)}%)`}
+              value={`+${formatCurrency(taxAmount)}`}
+            />
+          )}
+          <ResultRow label="Total" value={formatCurrency(finalTotal)} highlight border />
         </div>
       </div>
     </div>
