@@ -1,6 +1,12 @@
 import { DISCOUNT_TIERS } from "./constants";
 
-export const formatCurrency = (amount: number): string => `$${amount.toFixed(2)}`;
+export const formatCurrency = (amount: number): string => 
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
 
 export const formatPercent = (rate: number, decimals = 0): string => 
   `${(rate * 100).toFixed(decimals)}%`;
