@@ -23,6 +23,7 @@ export default function RetailCalculator() {
     handlePriceChange,
     handleRegionChange,
     handleBlur,
+    resetForm,
   } = useCalculator();
 
   return (
@@ -72,9 +73,23 @@ export default function RetailCalculator() {
             onChange={handleRegionChange}
             onBlur={() => handleBlur("region", region)}
           />
+
+          <button
+            type="button"
+            onClick={resetForm}
+            className="w-full py-2.5 sm:py-2 min-h-[44px] text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
+            aria-label="Clear all inputs and reset calculator"
+          >
+            Clear All
+          </button>
         </div>
 
-        <div className="bg-blue-50 px-4 sm:px-6 py-3 sm:py-4 space-y-1.5 sm:space-y-2">
+        <div
+          className="bg-blue-50 px-4 sm:px-6 py-3 sm:py-4 space-y-1.5 sm:space-y-2"
+          role="region"
+          aria-label="Calculation results"
+          aria-live="polite"
+        >
           <ResultRow label="Quantity" value={`${quantity || 0} items`} />
           <ResultRow label="Price per item" value={formatCurrency(price || 0)} />
           <ResultRow label="Region" value={region || "—"} />

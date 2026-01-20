@@ -80,6 +80,14 @@ export default function useCalculator() {
     return touched[field] ? errors[field] : undefined;
   }, [touched, errors]);
 
+  const resetForm = useCallback(() => {
+    setQuantity("");
+    setPrice("");
+    setRegion("");
+    setErrors({});
+    setTouched({});
+  }, []);
+
   return {
     quantity,
     price,
@@ -90,5 +98,6 @@ export default function useCalculator() {
     handlePriceChange,
     handleRegionChange,
     handleBlur,
+    resetForm,
   };
 }
