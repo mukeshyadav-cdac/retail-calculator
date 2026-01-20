@@ -27,13 +27,15 @@ export default function RetailCalculator() {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-lg shadow-md">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h1 className="text-xl font-medium text-gray-800">Retail Calculator</h1>
-          <p className="text-sm text-gray-500 mt-1">Calculate total with discounts & tax</p>
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
+          <h1 className="text-lg sm:text-xl font-medium text-gray-800">Retail Calculator</h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">
+            Calculate total with discounts & tax
+          </p>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
           <FormInput
             id="quantity"
             label="How many items"
@@ -72,7 +74,7 @@ export default function RetailCalculator() {
           />
         </div>
 
-        <div className="bg-blue-50 px-6 py-4 space-y-2">
+        <div className="bg-blue-50 px-4 sm:px-6 py-3 sm:py-4 space-y-1.5 sm:space-y-2">
           <ResultRow label="Quantity" value={`${quantity || 0} items`} />
           <ResultRow label="Price per item" value={formatCurrency(price || 0)} />
           <ResultRow label="Region" value={region || "—"} />
