@@ -1,59 +1,29 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import { REGIONS } from "../lib/constants";
-import { formatCurrency, formatPercent, getDiscountRate, parseNumber } from "../lib/utils";
-import { getTaxStrategy } from "../lib/taxStrategies";
+import { formatCurrency, formatPercent } from "../lib/utils";
+import useCalculator from "../hooks/useCalculator";
+import FormInput from "./ui/FormInput";
+import FormSelect from "./ui/FormSelect";
+import ResultRow from "./ui/ResultRow";
 
-type ResultRowProps = {
-  label: string;
-  value: string;
-  variant?: "default" | "highlight" | "green";
-  border?: boolean;
-};
-
-const ResultRow = ({ label, value, variant = "default", border }: ResultRowProps) => {
-  const labelStyles = {
-    default: "text-gray-600",
-    highlight: "font-medium text-gray-700",
-    green: "text-green-600",
-  };
-  const valueStyles = {
-    default: "text-sm font-medium text-gray-800",
-    highlight: "text-lg font-semibold text-blue-600",
-    green: "text-sm font-medium text-green-600",
-  };
-
-  return (
-    <div className={`flex justify-between items-center ${border ? "pt-2 border-t border-blue-100" : ""}`}>
-      <span className={`text-sm ${labelStyles[variant]}`}>{label}</span>
-      <span className={valueStyles[variant]}>{value}</span>
-    </div>
-  );
-};
-
-const inputStyles = "w-full px-3 py-2 bg-white border-b-2 border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors";
-const labelStyles = "block text-sm font-medium text-blue-600";
+const regionOptions = REGIONS.map((r) => ({
+  value: r.code,
+  label: `${r.code} - ${r.name}`,
+}));
 
 export default function RetailCalculator() {
-  const [quantity, setQuantity] = useState<number | "">("");
-  const [price, setPrice] = useState<number | "">("");
-  const [region, setRegion] = useState("");
-
-  const calc = useMemo(() => {
-    const subtotal = (quantity || 0) * (price || 0);
-    const discountRate = getDiscountRate(subtotal);
-    const discountAmount = subtotal * discountRate;
-    const afterDiscount = subtotal - discountAmount;
-
-    // Strategy Pattern for tax calculation
-    const taxStrategy = region ? getTaxStrategy(region) : null;
-    const taxRate = taxStrategy?.getRate() ?? 0;
-    const taxAmount = taxStrategy?.calculateTax(afterDiscount) ?? 0;
-    const total = afterDiscount + taxAmount;
-
-    return { subtotal, discountRate, discountAmount, afterDiscount, taxRate, taxAmount, total };
-  }, [quantity, price, region]);
+  const {
+    quantity,
+    price,
+    region,
+    calculations: calc,
+    getError,
+    handleQuantityChange,
+    handlePriceChange,
+    handleRegionChange,
+    handleBlur,
+  } = useCalculator();
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -64,50 +34,42 @@ export default function RetailCalculator() {
         </div>
 
         <div className="p-6 space-y-5">
-          <div className="space-y-1">
-            <label htmlFor="quantity" className={labelStyles}>How many items</label>
-            <input
-              id="quantity"
-              type="number"
-              min="1"
-              placeholder="Enter quantity"
-              value={quantity}
-              onChange={(e) => setQuantity(parseNumber(e.target.value, "int") as number | "")}
-              className={inputStyles}
-            />
-          </div>
+          <FormInput
+            id="quantity"
+            label="How many items"
+            type="number"
+            value={quantity}
+            placeholder="Enter quantity"
+            min="1"
+            error={getError("quantity")}
+            onChange={handleQuantityChange}
+            onBlur={() => handleBlur("quantity", quantity)}
+          />
 
-          <div className="space-y-1">
-            <label htmlFor="price" className={labelStyles}>Price per item</label>
-            <div className="relative">
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-              <input
-                id="price"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                value={price}
-                onChange={(e) => setPrice(parseNumber(e.target.value) as number | "")}
-                className={`${inputStyles} pl-4`}
-              />
-            </div>
-          </div>
+          <FormInput
+            id="price"
+            label="Price per item"
+            type="number"
+            value={price}
+            placeholder="0.00"
+            prefix="$"
+            min="0"
+            step="0.01"
+            error={getError("price")}
+            onChange={handlePriceChange}
+            onBlur={() => handleBlur("price", price)}
+          />
 
-          <div className="space-y-1">
-            <label htmlFor="region" className={labelStyles}>Region code</label>
-            <select
-              id="region"
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
-              className={inputStyles}
-            >
-              <option value="">Select region</option>
-              {REGIONS.map((r) => (
-                <option key={r.code} value={r.code}>{r.code} - {r.name}</option>
-              ))}
-            </select>
-          </div>
+          <FormSelect
+            id="region"
+            label="Region code"
+            value={region}
+            options={regionOptions}
+            placeholder="Select region"
+            error={getError("region")}
+            onChange={handleRegionChange}
+            onBlur={() => handleBlur("region", region)}
+          />
         </div>
 
         <div className="bg-blue-50 px-6 py-4 space-y-2">
@@ -116,11 +78,18 @@ export default function RetailCalculator() {
           <ResultRow label="Region" value={region || "—"} />
           <ResultRow label="Subtotal" value={formatCurrency(calc.subtotal)} border />
           {calc.discountRate > 0 && (
-            <ResultRow label={`Discount (${formatPercent(calc.discountRate)})`} value={`-${formatCurrency(calc.discountAmount)}`} variant="green" />
+            <ResultRow
+              label={`Discount (${formatPercent(calc.discountRate)})`}
+              value={`-${formatCurrency(calc.discountAmount)}`}
+              variant="green"
+            />
           )}
           <ResultRow label="After Discount" value={formatCurrency(calc.afterDiscount)} />
           {calc.taxRate > 0 && (
-            <ResultRow label={`Tax (${formatPercent(calc.taxRate, 2)})`} value={`+${formatCurrency(calc.taxAmount)}`} />
+            <ResultRow
+              label={`Tax (${formatPercent(calc.taxRate, 2)})`}
+              value={`+${formatCurrency(calc.taxAmount)}`}
+            />
           )}
           <ResultRow label="Total" value={formatCurrency(calc.total)} variant="highlight" border />
         </div>
