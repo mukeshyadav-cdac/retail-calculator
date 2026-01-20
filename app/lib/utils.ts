@@ -1,4 +1,4 @@
-import { DISCOUNT_TIERS, TAX_RATES } from "./constants";
+import { DISCOUNT_TIERS } from "./constants";
 
 export const formatCurrency = (amount: number): string => `$${amount.toFixed(2)}`;
 
@@ -9,11 +9,6 @@ export const getDiscountRate = (subtotal: number): number => {
   const tier = DISCOUNT_TIERS.find((t) => subtotal >= t.threshold);
   return tier?.rate ?? 0;
 };
-
-export const getTaxRate = (region: string): number => TAX_RATES[region] ?? 0;
-
-export const calculateTax = (amount: number, region: string): number => 
-  amount * getTaxRate(region);
 
 export const parseNumber = (value: string, type: "int" | "float" = "float"): number | "" => {
   if (value === "") return "";

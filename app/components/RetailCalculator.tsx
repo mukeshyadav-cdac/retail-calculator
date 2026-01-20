@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { REGIONS } from "../lib/constants";
-import { formatCurrency, formatPercent, getDiscountRate, getTaxRate, calculateTax, parseNumber } from "../lib/utils";
+import { formatCurrency, formatPercent, getDiscountRate, parseNumber } from "../lib/utils";
+import { getTaxStrategy } from "../lib/taxStrategies";
 
 type ResultRowProps = {
   label: string;
@@ -44,8 +45,11 @@ export default function RetailCalculator() {
     const discountRate = getDiscountRate(subtotal);
     const discountAmount = subtotal * discountRate;
     const afterDiscount = subtotal - discountAmount;
-    const taxRate = getTaxRate(region);
-    const taxAmount = calculateTax(afterDiscount, region);
+
+    // Strategy Pattern for tax calculation
+    const taxStrategy = region ? getTaxStrategy(region) : null;
+    const taxRate = taxStrategy?.getRate() ?? 0;
+    const taxAmount = taxStrategy?.calculateTax(afterDiscount) ?? 0;
     const total = afterDiscount + taxAmount;
 
     return { subtotal, discountRate, discountAmount, afterDiscount, taxRate, taxAmount, total };
