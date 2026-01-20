@@ -1,18 +1,21 @@
-import { DISCOUNT_TIERS } from "./constants";
+import { DISCOUNT_TIERS, TAX_RATES } from "./constants";
 
-export const formatCurrency = (amount: number): string => {
-  return `$${amount.toFixed(2)}`;
-};
+export const formatCurrency = (amount: number): string => `$${amount.toFixed(2)}`;
+
+export const formatPercent = (rate: number, decimals = 0): string => 
+  `${(rate * 100).toFixed(decimals)}%`;
 
 export const getDiscountRate = (subtotal: number): number => {
   const tier = DISCOUNT_TIERS.find((t) => subtotal >= t.threshold);
-  return tier ? tier.rate : 0;
+  return tier?.rate ?? 0;
 };
 
-export const parseNumber = (
-  value: string,
-  type: "int" | "float" = "float"
-): number | "" => {
+export const getTaxRate = (region: string): number => TAX_RATES[region] ?? 0;
+
+export const calculateTax = (amount: number, region: string): number => 
+  amount * getTaxRate(region);
+
+export const parseNumber = (value: string, type: "int" | "float" = "float"): number | "" => {
   if (value === "") return "";
   const numValue = type === "int" ? parseInt(value, 10) : parseFloat(value);
   return !isNaN(numValue) && numValue >= 0 ? numValue : "";

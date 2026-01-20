@@ -2,50 +2,54 @@
 
 import { useState, useMemo } from "react";
 import { REGIONS } from "../lib/constants";
-import { formatCurrency, getDiscountRate, parseNumber } from "../lib/utils";
-import { getTaxStrategy } from "../lib/taxStrategies";
+import { formatCurrency, formatPercent, getDiscountRate, getTaxRate, calculateTax, parseNumber } from "../lib/utils";
 
 type ResultRowProps = {
   label: string;
   value: string;
-  highlight?: boolean;
-  green?: boolean;
+  variant?: "default" | "highlight" | "green";
   border?: boolean;
 };
 
-const ResultRow = ({ label, value, highlight, green, border }: ResultRowProps) => (
-  <div className={`flex justify-between items-center ${border ? "pt-2 border-t border-blue-100" : ""}`}>
-    <span className={`text-sm ${green ? "text-green-600" : highlight ? "font-medium text-gray-700" : "text-gray-600"}`}>
-      {label}
-    </span>
-    <span className={`${highlight ? "text-lg font-semibold text-blue-600" : green ? "text-sm font-medium text-green-600" : "text-sm font-medium text-gray-800"}`}>
-      {value}
-    </span>
-  </div>
-);
+const ResultRow = ({ label, value, variant = "default", border }: ResultRowProps) => {
+  const labelStyles = {
+    default: "text-gray-600",
+    highlight: "font-medium text-gray-700",
+    green: "text-green-600",
+  };
+  const valueStyles = {
+    default: "text-sm font-medium text-gray-800",
+    highlight: "text-lg font-semibold text-blue-600",
+    green: "text-sm font-medium text-green-600",
+  };
+
+  return (
+    <div className={`flex justify-between items-center ${border ? "pt-2 border-t border-blue-100" : ""}`}>
+      <span className={`text-sm ${labelStyles[variant]}`}>{label}</span>
+      <span className={valueStyles[variant]}>{value}</span>
+    </div>
+  );
+};
 
 const inputStyles = "w-full px-3 py-2 bg-white border-b-2 border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors";
+const labelStyles = "block text-sm font-medium text-blue-600";
 
 export default function RetailCalculator() {
   const [quantity, setQuantity] = useState<number | "">("");
   const [price, setPrice] = useState<number | "">("");
-  const [region, setRegion] = useState<string>("");
+  const [region, setRegion] = useState("");
 
-  const calculations = useMemo(() => {
+  const calc = useMemo(() => {
     const subtotal = (quantity || 0) * (price || 0);
     const discountRate = getDiscountRate(subtotal);
     const discountAmount = subtotal * discountRate;
-    const discountedPrice = subtotal - discountAmount;
+    const afterDiscount = subtotal - discountAmount;
+    const taxRate = getTaxRate(region);
+    const taxAmount = calculateTax(afterDiscount, region);
+    const total = afterDiscount + taxAmount;
 
-    const taxStrategy = region ? getTaxStrategy(region) : null;
-    const taxRate = taxStrategy?.getRate() ?? 0;
-    const taxAmount = taxStrategy?.calculateTax(discountedPrice) ?? 0;
-    const finalTotal = discountedPrice + taxAmount;
-
-    return { subtotal, discountRate, discountAmount, discountedPrice, taxRate, taxAmount, finalTotal };
+    return { subtotal, discountRate, discountAmount, afterDiscount, taxRate, taxAmount, total };
   }, [quantity, price, region]);
-
-  const { subtotal, discountRate, discountAmount, discountedPrice, taxRate, taxAmount, finalTotal } = calculations;
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -57,9 +61,7 @@ export default function RetailCalculator() {
 
         <div className="p-6 space-y-5">
           <div className="space-y-1">
-            <label htmlFor="quantity" className="block text-sm font-medium text-blue-600">
-              How many items
-            </label>
+            <label htmlFor="quantity" className={labelStyles}>How many items</label>
             <input
               id="quantity"
               type="number"
@@ -72,9 +74,7 @@ export default function RetailCalculator() {
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="price" className="block text-sm font-medium text-blue-600">
-              Price per item
-            </label>
+            <label htmlFor="price" className={labelStyles}>Price per item</label>
             <div className="relative">
               <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <input
@@ -91,9 +91,7 @@ export default function RetailCalculator() {
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="region" className="block text-sm font-medium text-blue-600">
-              Region code
-            </label>
+            <label htmlFor="region" className={labelStyles}>Region code</label>
             <select
               id="region"
               value={region}
@@ -102,9 +100,7 @@ export default function RetailCalculator() {
             >
               <option value="">Select region</option>
               {REGIONS.map((r) => (
-                <option key={r.code} value={r.code}>
-                  {r.code} - {r.name}
-                </option>
+                <option key={r.code} value={r.code}>{r.code} - {r.name}</option>
               ))}
             </select>
           </div>
@@ -114,22 +110,15 @@ export default function RetailCalculator() {
           <ResultRow label="Quantity" value={`${quantity || 0} items`} />
           <ResultRow label="Price per item" value={formatCurrency(price || 0)} />
           <ResultRow label="Region" value={region || "—"} />
-          <ResultRow label="Subtotal" value={formatCurrency(subtotal)} border />
-          {discountRate > 0 && (
-            <ResultRow
-              label={`Discount (${(discountRate * 100).toFixed(0)}%)`}
-              value={`-${formatCurrency(discountAmount)}`}
-              green
-            />
+          <ResultRow label="Subtotal" value={formatCurrency(calc.subtotal)} border />
+          {calc.discountRate > 0 && (
+            <ResultRow label={`Discount (${formatPercent(calc.discountRate)})`} value={`-${formatCurrency(calc.discountAmount)}`} variant="green" />
           )}
-          <ResultRow label="After Discount" value={formatCurrency(discountedPrice)} />
-          {taxRate > 0 && (
-            <ResultRow
-              label={`Tax (${(taxRate * 100).toFixed(2)}%)`}
-              value={`+${formatCurrency(taxAmount)}`}
-            />
+          <ResultRow label="After Discount" value={formatCurrency(calc.afterDiscount)} />
+          {calc.taxRate > 0 && (
+            <ResultRow label={`Tax (${formatPercent(calc.taxRate, 2)})`} value={`+${formatCurrency(calc.taxAmount)}`} />
           )}
-          <ResultRow label="Total" value={formatCurrency(finalTotal)} highlight border />
+          <ResultRow label="Total" value={formatCurrency(calc.total)} variant="highlight" border />
         </div>
       </div>
     </div>
