@@ -31,7 +31,7 @@ describe("RetailCalculator", () => {
     fireEvent.change(quantityInput, { target: { value: "5" } });
     fireEvent.change(priceInput, { target: { value: "10" } });
 
-    expect(screen.getAllByText("$50.00")).toHaveLength(2);
+    expect(screen.getAllByText("$50.00")).toHaveLength(3);
   });
 
   it("renders region selector and updates value on change", () => {
@@ -55,6 +55,22 @@ describe("RetailCalculator", () => {
 
     expect(screen.getByText("Discount (3%)")).toBeInTheDocument();
     expect(screen.getByText("-$30.00")).toBeInTheDocument();
-    expect(screen.getByText("$970.00")).toBeInTheDocument();
+    expect(screen.getAllByText("$970.00")).toHaveLength(2);
+  });
+
+  it("calculates tax correctly for AUK region (6.85%)", () => {
+    render(<RetailCalculator />);
+
+    const quantityInput = screen.getByLabelText("How many items");
+    const priceInput = screen.getByLabelText("Price per item");
+    const regionSelect = screen.getByLabelText("Region code");
+
+    fireEvent.change(quantityInput, { target: { value: "1" } });
+    fireEvent.change(priceInput, { target: { value: "100" } });
+    fireEvent.change(regionSelect, { target: { value: "AUK" } });
+
+    expect(screen.getByText("Tax (6.85%)")).toBeInTheDocument();
+    expect(screen.getByText("+$6.85")).toBeInTheDocument();
+    expect(screen.getByText("$106.85")).toBeInTheDocument();
   });
 });
