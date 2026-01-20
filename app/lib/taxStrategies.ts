@@ -1,3 +1,5 @@
+import { TAX_RATES } from "./constants";
+
 export interface TaxStrategy {
   calculateTax(amount: number): number;
   getRate(): number;
@@ -14,14 +16,6 @@ class RegionalTaxStrategy implements TaxStrategy {
   getRate() { return this.rate; }
   calculateTax(amount: number) { return amount * this.rate; }
 }
-
-const TAX_RATES: Record<string, number> = {
-  AUK: 0.0685,
-  WLG: 0.08,
-  WAI: 0.0625,
-  CHC: 0.04,
-  TAS: 0.0825,
-};
 
 const TAX_STRATEGIES = Object.entries(TAX_RATES).reduce(
   (acc, [code, rate]) => ({ ...acc, [code]: new RegionalTaxStrategy(code, rate) }),
