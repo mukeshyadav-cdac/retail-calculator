@@ -58,6 +58,18 @@ describe("RetailCalculator", () => {
     expect(screen.getAllByText("$970.00")).toHaveLength(2);
   });
 
+  it("formats currency with thousand separators", () => {
+    render(<RetailCalculator />);
+
+    const quantityInput = screen.getByLabelText("How many items");
+    const priceInput = screen.getByLabelText("Price per item");
+
+    fireEvent.change(quantityInput, { target: { value: "100" } });
+    fireEvent.change(priceInput, { target: { value: "100" } });
+
+    expect(screen.getByText("$10,000.00")).toBeInTheDocument();
+  });
+
   it("calculates tax correctly for AUK region (6.85%)", () => {
     render(<RetailCalculator />);
 
