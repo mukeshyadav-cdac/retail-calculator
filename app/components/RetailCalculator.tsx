@@ -30,6 +30,8 @@ export default function RetailCalculator() {
     }
   };
 
+  const subtotal = (quantity || 0) * (price || 0);
+
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="bg-white rounded-lg shadow-md">
@@ -93,6 +95,12 @@ export default function RetailCalculator() {
             <span className="text-sm text-gray-600">Price per item</span>
             <span className="text-sm font-medium text-gray-800">
               ${(price || 0).toFixed(2)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center pt-2 border-t border-blue-100">
+            <span className="text-sm font-medium text-gray-700">Subtotal</span>
+            <span className="text-lg font-semibold text-blue-600">
+              ${subtotal.toFixed(2)}
             </span>
           </div>
         </div>

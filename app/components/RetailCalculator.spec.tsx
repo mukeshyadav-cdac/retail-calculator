@@ -21,4 +21,16 @@ describe("RetailCalculator", () => {
     fireEvent.change(input, { target: { value: "19.99" } });
     expect(screen.getByText("$19.99")).toBeInTheDocument();
   });
+
+  it("calculates and displays subtotal correctly", () => {
+    render(<RetailCalculator />);
+
+    const quantityInput = screen.getByLabelText("How many items");
+    const priceInput = screen.getByLabelText("Price per item");
+
+    fireEvent.change(quantityInput, { target: { value: "5" } });
+    fireEvent.change(priceInput, { target: { value: "10" } });
+
+    expect(screen.getByText("$50.00")).toBeInTheDocument();
+  });
 });
