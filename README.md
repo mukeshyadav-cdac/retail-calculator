@@ -11,8 +11,25 @@ A retail calculator built with Next.js that calculates total price with volume d
 
 ---
 
-## Task Breakdown
+### Approach & Philosophy
 
+The project was built following **incremental value delivery** principles—each task ships a complete, usable feature that provides immediate value to users. Rather than building the entire calculator at once, we progressively enhanced it, ensuring the application was functional and testable at every step.
+
+**Key decisions:**
+- **Start with inputs, end with polish** — Users need to enter data before seeing results, so inputs came first
+- **Business logic before presentation** — Calculations work correctly before we worry about formatting
+- **Core features before enhancements** — Validation, formatting, responsiveness, and accessibility come after the calculator works
+- **Strategy Pattern for tax** — Chose this pattern to demonstrate clean architecture and extensibility
+
+**Architecture evolved organically:**
+- Started with a single component
+- Extracted reusable UI components (`FormInput`, `FormSelect`, `ResultRow`) when patterns emerged
+- Extracted business logic into a custom hook (`useCalculator`) for separation of concerns
+- Kept tax calculation in its own module with Strategy Pattern for extensibility
+
+---
+
+## Task Breakdown
 
 | # | Issue Title | Description | Customer Value |
 |---|-------------|-------------|------------|
@@ -29,11 +46,15 @@ A retail calculator built with Next.js that calculates total price with volume d
 | **11** | **Add responsive mobile design** | Ensure calculator works well on phones and tablets | Users can calculate on any device |
 | **12** | **Add accessibility and clear/reset functionality** | Proper labels, keyboard navigation, ARIA attributes, and reset button | All users can access and reuse the calculator |
 
+
 ## Getting Started
 
 First, run the development server:
 
 ```bash
+# for dependency
+npm install
+# to start dev server
 npm run dev
 # or
 yarn dev
@@ -42,6 +63,12 @@ pnpm dev
 # or
 bun dev
 ```
+
+To run the test cases:
+```bash
+npm run test
+```
+
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
