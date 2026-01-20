@@ -10,6 +10,19 @@ const REGIONS = [
   { code: "TAS", name: "Tasman" },
 ];
 
+const DISCOUNT_TIERS = [
+  { threshold: 50000, rate: 0.15 },
+  { threshold: 10000, rate: 0.10 },
+  { threshold: 7000, rate: 0.07 },
+  { threshold: 5000, rate: 0.05 },
+  { threshold: 1000, rate: 0.03 },
+];
+
+const getDiscountRate = (subtotal: number): number => {
+  const tier = DISCOUNT_TIERS.find((t) => subtotal >= t.threshold);
+  return tier ? tier.rate : 0;
+};
+
 export default function RetailCalculator() {
   const [quantity, setQuantity] = useState<number | "">("");
   const [price, setPrice] = useState<number | "">("");
@@ -40,6 +53,9 @@ export default function RetailCalculator() {
   };
 
   const subtotal = (quantity || 0) * (price || 0);
+  const discountRate = getDiscountRate(subtotal);
+  const discountAmount = subtotal * discountRate;
+  const discountedPrice = subtotal - discountAmount;
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -136,8 +152,24 @@ export default function RetailCalculator() {
           </div>
           <div className="flex justify-between items-center pt-2 border-t border-blue-100">
             <span className="text-sm font-medium text-gray-700">Subtotal</span>
-            <span className="text-lg font-semibold text-blue-600">
+            <span className="text-sm font-medium text-gray-800">
               ${subtotal.toFixed(2)}
+            </span>
+          </div>
+          {discountRate > 0 && (
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-green-600">
+                Discount ({(discountRate * 100).toFixed(0)}%)
+              </span>
+              <span className="text-sm font-medium text-green-600">
+                -${discountAmount.toFixed(2)}
+              </span>
+            </div>
+          )}
+          <div className="flex justify-between items-center pt-2 border-t border-blue-100">
+            <span className="text-sm font-medium text-gray-700">After Discount</span>
+            <span className="text-lg font-semibold text-blue-600">
+              ${discountedPrice.toFixed(2)}
             </span>
           </div>
         </div>
