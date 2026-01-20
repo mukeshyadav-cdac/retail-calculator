@@ -31,7 +31,7 @@ describe("RetailCalculator", () => {
     fireEvent.change(quantityInput, { target: { value: "5" } });
     fireEvent.change(priceInput, { target: { value: "10" } });
 
-    expect(screen.getByText("$50.00")).toBeInTheDocument();
+    expect(screen.getAllByText("$50.00")).toHaveLength(2);
   });
 
   it("renders region selector and updates value on change", () => {
