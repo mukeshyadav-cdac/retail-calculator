@@ -1,78 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { REGIONS } from "../lib/constants";
+import { formatCurrency, getDiscountRate, parseNumber } from "../lib/utils";
 
-const REGIONS = [
-  { code: "AUK", name: "Auckland" },
-  { code: "WLG", name: "Wellington" },
-  { code: "WAI", name: "Waikato" },
-  { code: "CHC", name: "Christchurch" },
-  { code: "TAS", name: "Tasman" },
-];
-
-const DISCOUNT_TIERS = [
-  { threshold: 50000, rate: 0.15 },
-  { threshold: 10000, rate: 0.10 },
-  { threshold: 7000, rate: 0.07 },
-  { threshold: 5000, rate: 0.05 },
-  { threshold: 1000, rate: 0.03 },
-];
-
-const getDiscountRate = (subtotal: number): number => {
-  const tier = DISCOUNT_TIERS.find((t) => subtotal >= t.threshold);
-  return tier ? tier.rate : 0;
+type ResultRowProps = {
+  label: string;
+  value: string;
+  highlight?: boolean;
+  green?: boolean;
+  border?: boolean;
 };
+
+const ResultRow = ({ label, value, highlight, green, border }: ResultRowProps) => (
+  <div className={`flex justify-between items-center ${border ? "pt-2 border-t border-blue-100" : ""}`}>
+    <span className={`text-sm ${green ? "text-green-600" : highlight ? "font-medium text-gray-700" : "text-gray-600"}`}>
+      {label}
+    </span>
+    <span className={`${highlight ? "text-lg font-semibold text-blue-600" : green ? "text-sm font-medium text-green-600" : "text-sm font-medium text-gray-800"}`}>
+      {value}
+    </span>
+  </div>
+);
+
+const inputStyles = "w-full px-3 py-2 bg-white border-b-2 border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors";
 
 export default function RetailCalculator() {
   const [quantity, setQuantity] = useState<number | "">("");
   const [price, setPrice] = useState<number | "">("");
   const [region, setRegion] = useState<string>("");
 
-  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === "") {
-      setQuantity("");
-    } else {
-      const numValue = parseInt(value, 10);
-      if (!isNaN(numValue) && numValue >= 0) {
-        setQuantity(numValue);
-      }
-    }
-  };
+  const calculations = useMemo(() => {
+    const subtotal = (quantity || 0) * (price || 0);
+    const discountRate = getDiscountRate(subtotal);
+    const discountAmount = subtotal * discountRate;
+    const discountedPrice = subtotal - discountAmount;
+    return { subtotal, discountRate, discountAmount, discountedPrice };
+  }, [quantity, price]);
 
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === "") {
-      setPrice("");
-    } else {
-      const numValue = parseFloat(value);
-      if (!isNaN(numValue) && numValue >= 0) {
-        setPrice(numValue);
-      }
-    }
-  };
-
-  const subtotal = (quantity || 0) * (price || 0);
-  const discountRate = getDiscountRate(subtotal);
-  const discountAmount = subtotal * discountRate;
-  const discountedPrice = subtotal - discountAmount;
+  const { subtotal, discountRate, discountAmount, discountedPrice } = calculations;
 
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="bg-white rounded-lg shadow-md">
         <div className="px-6 py-4 border-b border-gray-100">
           <h1 className="text-xl font-medium text-gray-800">Retail Calculator</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Calculate total with discounts & tax
-          </p>
+          <p className="text-sm text-gray-500 mt-1">Calculate total with discounts & tax</p>
         </div>
 
         <div className="p-6 space-y-5">
           <div className="space-y-1">
-            <label
-              htmlFor="quantity"
-              className="block text-sm font-medium text-blue-600"
-            >
+            <label htmlFor="quantity" className="block text-sm font-medium text-blue-600">
               How many items
             </label>
             <input
@@ -81,16 +59,13 @@ export default function RetailCalculator() {
               min="1"
               placeholder="Enter quantity"
               value={quantity}
-              onChange={handleQuantityChange}
-              className="w-full px-3 py-2 bg-white border-b-2 border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+              onChange={(e) => setQuantity(parseNumber(e.target.value, "int") as number | "")}
+              className={inputStyles}
             />
           </div>
 
           <div className="space-y-1">
-            <label
-              htmlFor="price"
-              className="block text-sm font-medium text-blue-600"
-            >
+            <label htmlFor="price" className="block text-sm font-medium text-blue-600">
               Price per item
             </label>
             <div className="relative">
@@ -102,24 +77,21 @@ export default function RetailCalculator() {
                 step="0.01"
                 placeholder="0.00"
                 value={price}
-                onChange={handlePriceChange}
-                className="w-full pl-4 pr-3 py-2 bg-white border-b-2 border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+                onChange={(e) => setPrice(parseNumber(e.target.value) as number | "")}
+                className={`${inputStyles} pl-4`}
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label
-              htmlFor="region"
-              className="block text-sm font-medium text-blue-600"
-            >
+            <label htmlFor="region" className="block text-sm font-medium text-blue-600">
               Region code
             </label>
             <select
               id="region"
               value={region}
               onChange={(e) => setRegion(e.target.value)}
-              className="w-full px-3 py-2 bg-white border-b-2 border-gray-200 text-gray-800 focus:outline-none focus:border-blue-500 transition-colors"
+              className={inputStyles}
             >
               <option value="">Select region</option>
               {REGIONS.map((r) => (
@@ -132,46 +104,18 @@ export default function RetailCalculator() {
         </div>
 
         <div className="bg-blue-50 px-6 py-4 space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Quantity</span>
-            <span className="text-sm font-medium text-gray-800">
-              {quantity || 0} items
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Price per item</span>
-            <span className="text-sm font-medium text-gray-800">
-              ${(price || 0).toFixed(2)}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Region</span>
-            <span className="text-sm font-medium text-gray-800">
-              {region || "—"}
-            </span>
-          </div>
-          <div className="flex justify-between items-center pt-2 border-t border-blue-100">
-            <span className="text-sm font-medium text-gray-700">Subtotal</span>
-            <span className="text-sm font-medium text-gray-800">
-              ${subtotal.toFixed(2)}
-            </span>
-          </div>
+          <ResultRow label="Quantity" value={`${quantity || 0} items`} />
+          <ResultRow label="Price per item" value={formatCurrency(price || 0)} />
+          <ResultRow label="Region" value={region || "—"} />
+          <ResultRow label="Subtotal" value={formatCurrency(subtotal)} border />
           {discountRate > 0 && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-green-600">
-                Discount ({(discountRate * 100).toFixed(0)}%)
-              </span>
-              <span className="text-sm font-medium text-green-600">
-                -${discountAmount.toFixed(2)}
-              </span>
-            </div>
+            <ResultRow
+              label={`Discount (${(discountRate * 100).toFixed(0)}%)`}
+              value={`-${formatCurrency(discountAmount)}`}
+              green
+            />
           )}
-          <div className="flex justify-between items-center pt-2 border-t border-blue-100">
-            <span className="text-sm font-medium text-gray-700">After Discount</span>
-            <span className="text-lg font-semibold text-blue-600">
-              ${discountedPrice.toFixed(2)}
-            </span>
-          </div>
+          <ResultRow label="After Discount" value={formatCurrency(discountedPrice)} highlight border />
         </div>
       </div>
     </div>
