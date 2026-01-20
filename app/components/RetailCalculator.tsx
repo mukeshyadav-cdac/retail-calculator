@@ -2,9 +2,18 @@
 
 import { useState } from "react";
 
+const REGIONS = [
+  { code: "AUK", name: "Auckland" },
+  { code: "WLG", name: "Wellington" },
+  { code: "WAI", name: "Waikato" },
+  { code: "CHC", name: "Christchurch" },
+  { code: "TAS", name: "Tasman" },
+];
+
 export default function RetailCalculator() {
   const [quantity, setQuantity] = useState<number | "">("");
   const [price, setPrice] = useState<number | "">("");
+  const [region, setRegion] = useState<string>("");
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -82,6 +91,28 @@ export default function RetailCalculator() {
               />
             </div>
           </div>
+
+          <div className="space-y-1">
+            <label
+              htmlFor="region"
+              className="block text-sm font-medium text-blue-600"
+            >
+              Region code
+            </label>
+            <select
+              id="region"
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              className="w-full px-3 py-2 bg-white border-b-2 border-gray-200 text-gray-800 focus:outline-none focus:border-blue-500 transition-colors"
+            >
+              <option value="">Select region</option>
+              {REGIONS.map((r) => (
+                <option key={r.code} value={r.code}>
+                  {r.code} - {r.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="bg-blue-50 px-6 py-4 space-y-2">
@@ -95,6 +126,12 @@ export default function RetailCalculator() {
             <span className="text-sm text-gray-600">Price per item</span>
             <span className="text-sm font-medium text-gray-800">
               ${(price || 0).toFixed(2)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">Region</span>
+            <span className="text-sm font-medium text-gray-800">
+              {region || "—"}
             </span>
           </div>
           <div className="flex justify-between items-center pt-2 border-t border-blue-100">

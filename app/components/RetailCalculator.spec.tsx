@@ -33,4 +33,14 @@ describe("RetailCalculator", () => {
 
     expect(screen.getByText("$50.00")).toBeInTheDocument();
   });
+
+  it("renders region selector and updates value on change", () => {
+    render(<RetailCalculator />);
+
+    const select = screen.getByLabelText("Region code");
+    expect(select).toBeInTheDocument();
+
+    fireEvent.change(select, { target: { value: "AUK" } });
+    expect(screen.getByText("AUK")).toBeInTheDocument();
+  });
 });
