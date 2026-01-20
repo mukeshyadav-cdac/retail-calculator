@@ -4,6 +4,7 @@ import { useState } from "react";
 
 export default function RetailCalculator() {
   const [quantity, setQuantity] = useState<number | "">("");
+  const [price, setPrice] = useState<number | "">("");
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -13,6 +14,18 @@ export default function RetailCalculator() {
       const numValue = parseInt(value, 10);
       if (!isNaN(numValue) && numValue >= 0) {
         setQuantity(numValue);
+      }
+    }
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === "") {
+      setPrice("");
+    } else {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue >= 0) {
+        setPrice(numValue);
       }
     }
   };
@@ -45,13 +58,41 @@ export default function RetailCalculator() {
               className="w-full px-3 py-2 bg-white border-b-2 border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
             />
           </div>
+
+          <div className="space-y-1">
+            <label
+              htmlFor="price"
+              className="block text-sm font-medium text-blue-600"
+            >
+              Price per item
+            </label>
+            <div className="relative">
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <input
+                id="price"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                value={price}
+                onChange={handlePriceChange}
+                className="w-full pl-4 pr-3 py-2 bg-white border-b-2 border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="bg-blue-50 px-6 py-4">
+        <div className="bg-blue-50 px-6 py-4 space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Quantity selected</span>
-            <span className="text-lg font-medium text-blue-600">
+            <span className="text-sm text-gray-600">Quantity</span>
+            <span className="text-sm font-medium text-gray-800">
               {quantity || 0} items
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">Price per item</span>
+            <span className="text-sm font-medium text-gray-800">
+              ${(price || 0).toFixed(2)}
             </span>
           </div>
         </div>
